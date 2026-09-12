@@ -10,7 +10,7 @@ trap 'rm -rf "$work"' EXIT INT TERM
 mkdir -p "$work/raw" "$work/build"
 source_digest=$(python3 "$root/.github/rpg-runtime/candidate_descriptor.py" digest "$output")
 python3 "$root/.github/rpg-runtime/candidate_descriptor.py" paths "$output" > "$work/source-files"
-tar -C "$root" --null --verbatim-files-from -T "$work/source-files" -cf "$work/source.tar"
+tar --mtime=@0 --owner=0 --group=0 --numeric-owner -C "$root" --null --verbatim-files-from -T "$work/source-files" -cf "$work/source.tar"
 
 export RETROM_HOST_UID="$(id -u)"
 export RETROM_HOST_GID="$(id -g)"

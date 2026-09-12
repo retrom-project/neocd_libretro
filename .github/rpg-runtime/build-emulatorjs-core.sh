@@ -25,6 +25,9 @@ git -C /work/retroarch checkout -q --detach FETCH_HEAD
 
 export EMSCRIPTEN="$(dirname "$(command -v emcc)")"
 cd /work/core
+em++ -O2 -Isrc .github/rpg-runtime/test-range.cpp -s ASYNCIFY=1 \
+  -s ASYNCIFY_IMPORTS=retrom_range_read -s ASYNCIFY_STACK_SIZE=65536 -o /work/test-range.js
+node /work/test-range.js
 emmake make -f Makefile clean "$@"
 emmake make -j"4" -f Makefile platform=emscripten \
   INITIAL_HEAP=268435456 AUTO_MEMORY_GROWTH=1 "$@"
@@ -33,6 +36,10 @@ archive=$(find . -maxdepth 1 -type f -name "${core_name}_libretro_emscripten.bc"
 test -n "$archive" && test -f "$archive"
 install -m 0644 "$archive" "/work/retroarch/emulatorjs/${core_name}_libretro_emscripten.bc"
 install -m 0644 "$archive" /work/retroarch/libretro_emscripten.a
+
+cat >> /work/retroarch/Makefile.emulatorjs <<'EOF'
+LDFLAGS += -s ASYNCIFY_IMPORTS=retrom_range_read -s ASYNCIFY_STACK_SIZE=65536
+EOF
 
 emmake make -C /work/retroarch -f Makefile.emulatorjs \
   HAVE_CHD=1 HAVE_THREADS=0 PTHREAD_POOL_SIZE=0 ASYNC=1 HAVE_OPENGLES3=1 \
