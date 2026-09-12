@@ -10,3 +10,7 @@ cmake_install.cmake
 *.o
 *.so
 *.dll
+
+.retrom-build/
+
+__pycache__/

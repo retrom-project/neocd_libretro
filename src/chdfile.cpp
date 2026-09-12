@@ -3,6 +3,7 @@
 
 #include "chdfile.h"
 #include "neocd_endian.h"
+#include "retrom_range.h"
 
 constexpr int CHD_SECTOR_SIZE = 2352 + 96;
 constexpr int CD_SECTOR_SIZE = 2352;
@@ -11,6 +12,7 @@ ChdFile::ChdFile() :
     AbstractFile(),
     m_chd(nullptr),
     m_stream(nullptr),
+    m_remote(false),
     m_io(),
     m_hunkSize(0),
     m_hunkLogicalSize(0),
@@ -33,13 +35,19 @@ bool ChdFile::service(const rchd_request_t& request)
     if (request.source != RCHD_SOURCE_SELF)
         return false;
 
-    if (m_io.size() < request.length)
-        m_io.resize(request.length);
+    const size_t length = std::min<size_t>(request.length, 256 * 1024);
+    if (m_io.size() < length)
+        m_io.resize(length);
 
-    if (filestream_seek(m_stream, static_cast<int64_t>(request.offset), RETRO_VFS_SEEK_POSITION_START) < 0)
-        return false;
-
-    int64_t got = filestream_read(m_stream, m_io.data(), static_cast<int64_t>(request.length));
+    int64_t got;
+    if (m_remote)
+        got = retrom_range_read(static_cast<double>(request.offset), length, m_io.data());
+    else
+    {
+        if (filestream_seek(m_stream, static_cast<int64_t>(request.offset), RETRO_VFS_SEEK_POSITION_START) < 0)
+            return false;
+        got = filestream_read(m_stream, m_io.data(), static_cast<int64_t>(length));
+    }
     if (got <= 0)
         return false;
 
@@ -69,10 +77,12 @@ bool ChdFile::open(const std::string& filename)
 {
     close();
 
-    m_stream = filestream_open(filename.c_str(),
+    m_remote = retrom_range_open(filename.c_str());
+    if (!m_remote)
+        m_stream = filestream_open(filename.c_str(),
         RETRO_VFS_FILE_ACCESS_READ,
         RETRO_VFS_FILE_ACCESS_HINT_NONE);
-    if (!m_stream)
+    if (!m_remote && !m_stream)
         return false;
 
     m_chd = rchd_new();
@@ -142,6 +152,7 @@ void ChdFile::close()
         m_hunkData = nullptr;
     }
 
+    m_remote = false;
     m_io.clear();
     m_io.shrink_to_fit();
 

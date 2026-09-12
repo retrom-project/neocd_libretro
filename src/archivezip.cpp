@@ -55,7 +55,17 @@ int64_t getFileSize(const std::string &archive, const std::string &filename)
     uint64_t size = 0;
 
     // Reads the central directory only: the member is not decompressed.
+#ifdef __EMSCRIPTEN__
+    // The pinned EJS frontend does not expose the newer central-directory
+    // size API. Its existing archive reader supplies the same member size.
+    void* data = nullptr;
+    int64_t length = 0;
+    if (file_archive_compressed_read(path.c_str(), &data, nullptr, &length) && length > 0)
+        size = static_cast<uint64_t>(length);
+    free(data);
+#else
     file_archive_get_file_crc32_and_size(path.c_str(), &size);
+#endif
     if (!size)
     {
         Libretro::Log::message(RETRO_LOG_ERROR, "Archive: Could not find %s in archive %s\n", filename.c_str(), archive.c_str());

@@ -110,3 +110,12 @@ ifneq ($(STATIC_LINKING),1)
 SOURCES_C += $(SRC_LIBRETRO_COMMON)
 endif
 SOURCES_C += $(SRC_LIBRETRO_COMMON_NEEDED)
+
+# EJS 4.2.3 uses an older libretro-common without the CHD decoder's CRC16
+# and built-in inflate. Keep the core's CRC implementation private.
+ifeq ($(platform), emscripten)
+SOURCES_C += $(LIBRETRO_COMM_DIR)/encodings/encoding_crc32.c \
+             $(LIBRETRO_COMM_DIR)/encodings/encoding_deflate.c
+CFLAGS += -Dencoding_crc32=neocd_encoding_crc32 -Dencoding_crc32_ogg=neocd_encoding_crc32_ogg
+CXXFLAGS += -Dencoding_crc32=neocd_encoding_crc32 -Dencoding_crc32_ogg=neocd_encoding_crc32_ogg
+endif

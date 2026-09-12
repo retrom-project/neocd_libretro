@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "forkRepository": "https://github.com/retrom-project/neocd_libretro",
+  "defaultBranch": "retrom/g3118c6901787",
+  "upstreamMirrorBranch": "master",
+  "upstreams": [
+    {
+      "role": "libretro-core",
+      "repository": "https://github.com/libretro/neocd_libretro",
+      "refType": "COMMIT",
+      "ref": "3118c6901787e863e80e79170d02d47657b3b0ab",
+      "commit": "3118c6901787e863e80e79170d02d47657b3b0ab"
+    },
+    {
+      "role": "emulatorjs-retroarch-linker",
+      "repository": "https://github.com/EmulatorJS/RetroArch",
+      "refType": "COMMIT",
+      "ref": "6dd4353937ef48b6ec0bfbdbb15d1c5992d86927",
+      "commit": "6dd4353937ef48b6ec0bfbdbb15d1c5992d86927"
+    }
+  ],
+  "adapterAbi": "emulatorjs-state-v1",
+  "releaseAssets": [
+    "neocd-wasm.data",
+    "LICENSE.md",
+    "source.tar.gz",
+    "rpg-runtime-release.json"
+  ]
+}

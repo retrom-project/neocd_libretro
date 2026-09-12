@@ -58,6 +58,7 @@ protected:
 
     rchd_t* m_chd;
     RFILE* m_stream;
+    bool m_remote;
     std::vector<uint8_t> m_io;
     uint32_t m_hunkSize;
     uint32_t m_hunkLogicalSize;
